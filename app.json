@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "21sec",
-    "slug": "21sec",
+    "name": "ortampazar",
+    "slug": "ortampazar",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "21sec",
+    "scheme": "ortampazar",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
