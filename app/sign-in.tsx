@@ -21,12 +21,20 @@ const Auth = () => {
   if (!loading && isLogged) return <Redirect href="/" />;
 
   const handleLogin = async () => {
-    const result = await login();
-    if (result) {
-      console.log("Login success")
-      refetch();
-    } else {
-      Alert.alert("Error", "Failed to login");
+    try {
+      const result = await login();
+      if (result) {
+        console.log("Login success");
+        await refetch();
+      } else {
+        Alert.alert("Error", "Failed to login with Google");
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      Alert.alert(
+        "Error",
+        "An error occurred while trying to login with Google"
+      );
     }
   };
 
@@ -45,7 +53,7 @@ const Auth = () => {
 
         <View className="px-10">
           <Text className="text-base text-center uppercase font-rubik text-black-200">
-            Welcome To Real Scout
+            Welcome To ortamify
           </Text>
 
           <Text className="text-3xl font-rubik-bold text-black-300 text-center mt-2">
@@ -54,7 +62,7 @@ const Auth = () => {
           </Text>
 
           <Text className="text-lg font-rubik text-black-200 text-center mt-12">
-            Login to Real Scout with Google
+            Login to ortamify with Google
           </Text>
 
           <TouchableOpacity

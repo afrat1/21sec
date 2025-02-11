@@ -1,7 +1,10 @@
 import { Text, View } from "react-native";
 import { Link } from "expo-router";
+import { useGlobalContext } from "@/lib/global-provider";
 
 export default function Index() {
+    const { user } = useGlobalContext();
+
     return (
         <View
         style={{
@@ -10,12 +13,13 @@ export default function Index() {
             alignItems: "center",
         }}
         >
-            <Text className="font-bold font-rubik my-10 text-3xl">Welcome to ortamify</Text>
+            <Text className="font-bold font-rubik my-10 text-3xl">
+                {user ? `Welcome, ${user.name}` : 'Welcome to ortamify'}
+            </Text>
             <Link href="/sign-in">Sign In</Link>
             <Link href="/explore">Explore</Link>
             <Link href="/profile">Profile</Link>
             <Link href="/properties/1">Property</Link>
-
         </View>
     );
 }
