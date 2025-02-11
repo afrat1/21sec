@@ -28,16 +28,12 @@ export const GlobalProvider = ({ children }: GlobalProviderProps) => {
   const {
     data: user,
     loading,
-    refetch: originalRefetch,
+    refetch,
   } = useAppwrite({
     fn: getCurrentUser,
   });
 
   const isLogged = !!user;
-  
-  const refetch = () => originalRefetch({});
-
-  console.log("fs ",JSON.stringify(user,null,2));
 
   return (
     <GlobalContext.Provider
