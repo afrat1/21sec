@@ -69,7 +69,7 @@ export async function logout() {
     }
 }
 
-export async function getUser() {
+export async function getCurrentUser() {
     try {
       const result = await account.get();
       if (result.$id) {

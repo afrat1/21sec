@@ -1,8 +1,10 @@
-import { SplashScreen, Stack } from "expo-router";
+import { useEffect } from "react";
+import { Stack } from "expo-router";
+import { useFonts } from "expo-font";
+import * as SplashScreen from "expo-splash-screen";
 
 import "./globals.css";
-import { useFonts } from "expo-font";
-import { useEffect } from "react";
+import GlobalProvider from "@/lib/global-provider";
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
@@ -11,12 +13,12 @@ export default function RootLayout() {
     "Rubik-Light": require("../assets/fonts/Rubik-Light.ttf"),
     "Rubik-Medium": require("../assets/fonts/Rubik-Medium.ttf"),
     "Rubik-Regular": require("../assets/fonts/Rubik-Regular.ttf"),
-    "Rubik-SemiBold": require("../assets/fonts/Rubik-SemiBold.ttf"), 
-  })
-   
+    "Rubik-SemiBold": require("../assets/fonts/Rubik-SemiBold.ttf"),
+  });
+
   useEffect(() => {
     if (fontsLoaded) {
-      SplashScreen.hideAsync(); 
+      SplashScreen.hideAsync();
     }
   }, [fontsLoaded]);
 
@@ -24,5 +26,9 @@ export default function RootLayout() {
     return null;
   }
 
-  return <Stack screenOptions={{ headerShown: false }} />;
+  return (
+    <GlobalProvider>
+      <Stack screenOptions={{ headerShown: false }} />
+    </GlobalProvider>
+  );
 }
