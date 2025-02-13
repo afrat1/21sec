@@ -1,49 +1,48 @@
-import React, { useEffect, useState } from "react";
-import { View, Text, ActivityIndicator, Alert } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { verifyEmail } from "@/lib/appwrite";
+import React, { useEffect } from "react";
+import { View, Text, Button, Alert } from "react-native";
+import { useRoute, useNavigation } from "@react-navigation/native";
+import { account } from "../lib/appwrite"; // Adjust the import path as necessary
+import { RouteProp } from "@react-navigation/native";
+
+// Define the type for your route parameters
+type VerifyScreenRouteProp = RouteProp<{ params?: { userId?: string; secret?: string } }, "params">;
 
 const VerifyScreen = () => {
-  const router = useRouter();
-  const { userId, secret } = useLocalSearchParams();
-  const [loading, setLoading] = useState(true);
+  const route = useRoute<VerifyScreenRouteProp>(); // Specify the route type
+  const navigation = useNavigation();
+
+  // Check if params exist before destructuring
+  const userId = route.params?.userId;
+  const secret = route.params?.secret;
 
   useEffect(() => {
-    const verify = async () => {
+    const verifyUserEmail = async () => {
       if (!userId || !secret) {
-        Alert.alert("Error", "Invalid verification link.");
-        router.replace("/sign-in");
+        Alert.alert("Error", "Invalid verification request.");
+        navigation.goBack(); // Navigate back if params are missing
         return;
       }
 
       try {
-        const result = await verifyEmail(userId.toString(), secret.toString());
+        const result = await account.updateVerification(userId, secret);
         if (result) {
-          Alert.alert("Success", "Your email has been verified!");
-          router.replace("/sign-in");
-        } else {
-          Alert.alert("Error", "Email verification failed.");
+            console.log("success email verification")
+          Alert.alert("Success", "Email verified successfully!", );
         }
-      } catch (error: any) {
-        Alert.alert("Error", error.message || "Verification failed.");
-      } finally {
-        setLoading(false);
+      } catch (error) {
+        console.error("Verification error:", error);
+        Alert.alert("Error", "Email verification failed. Please try again.");
       }
     };
 
-    verify();
-  }, []);
+    verifyUserEmail();
+  }, [userId, secret]);
 
-  if (loading) {
-    return (
-      <View className="flex-1 justify-center items-center">
-        <ActivityIndicator size="large" />
-        <Text>Verifying your email...</Text>
-      </View>
-    );
-  }
-
-  return null;
+  return (
+    <View>
+      <Text>Verifying your email...</Text>
+    </View>
+  );
 };
 
 export default VerifyScreen;

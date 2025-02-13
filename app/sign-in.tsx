@@ -68,10 +68,10 @@ const Auth = () => {
           return;
         }
   
-        // Register user with the correct format
         const result = await registerWithEmail(email, password, name);
         if (result) {
           console.log("Registration successful:", result);
+          await refetch();
           Alert.alert("Success", "User registered successfully!");
         } else {
           Alert.alert("Error", "Registration failed. Try again.");

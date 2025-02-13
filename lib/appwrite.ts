@@ -11,6 +11,7 @@ import {
 import * as Linking from "expo-linking";
 import { openAuthSessionAsync } from "expo-web-browser";
 import { Alert } from "react-native";
+import { useNavigation } from "@react-navigation/native";
 
 export const config = {
   platform: "com.afrat.ortamify",
@@ -90,9 +91,6 @@ export async function getCurrentUser() {
   }
 }
 
-
-
-
 export async function loginWithEmail(email: string, password: string) {
   try {
     const session = await account.createEmailPasswordSession(email, password);
@@ -118,31 +116,6 @@ export async function loginWithEmail(email: string, password: string) {
     throw error;
   }
 }
-export async function sendVerificationCode(email: string, password: string, name: string) {
-  try {
-    const userId = ID.unique();
-    const user = await account.create(userId, email, password, name);
-
-    const redirectUri = Linking.createURL('/verify-screen');
-    await account.createVerification(redirectUri);
-
-    console.log("Registration successful. Verification email sent.");
-    return user;
-  } catch (error) {
-    console.error("Registration error:", error);
-    throw error;
-  }
-}
-
-export async function verifyCode(userId: string, secret: string) {
-  try {
-    await account.updateVerification(userId, secret);
-    return true;
-  } catch (error) {
-    console.error('Verify code error:', error);
-    throw error;
-  }
-}
 
 export async function registerWithEmail(email: string, password: string, name: string) {
   try {
@@ -152,21 +125,18 @@ export async function registerWithEmail(email: string, password: string, name: s
     if (user) {
       console.log("User created:", user);
 
-      // Wait before calling getCurrentUser()
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-
-      const currentUser = await getCurrentUser();
-      console.log("Current user after registration:", currentUser);
-
-      if (!currentUser) {
-        throw new Error("User session not established. Please log in manually.");
+      // Create a session immediately after registration
+      const session = await account.createEmailPasswordSession(email, password);
+      if (!session) {
+        throw new Error("Failed to create session after registration.");
       }
 
-      // Send email verification
-      const redirectUri = Linking.createURL("/verify-screen");
-      await account.createVerification(redirectUri);
+      console.log("Session created for newly registered user.");
+
+      // Send verification email (optional)
+      await account.createVerification("http://localhost:8081/verify-screen");
       console.log("Verification email sent.");
-      
+
       return user;
     }
   } catch (error) {
