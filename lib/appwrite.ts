@@ -10,19 +10,12 @@ import {
 } from "react-native-appwrite";
 import * as Linking from "expo-linking";
 import { openAuthSessionAsync } from "expo-web-browser";
+import { Alert } from "react-native";
 
 export const config = {
-  platform: "com.jsm.restate",
+  platform: "com.afrat.ortamify",
   endpoint: process.env.EXPO_PUBLIC_APPWRITE_ENDPOINT,
   projectId: process.env.EXPO_PUBLIC_APPWRITE_PROJECT_ID,
-  databaseId: process.env.EXPO_PUBLIC_APPWRITE_DATABASE_ID,
-  galleriesCollectionId:
-    process.env.EXPO_PUBLIC_APPWRITE_GALLERIES_COLLECTION_ID,
-  reviewsCollectionId: process.env.EXPO_PUBLIC_APPWRITE_REVIEWS_COLLECTION_ID,
-  agentsCollectionId: process.env.EXPO_PUBLIC_APPWRITE_AGENTS_COLLECTION_ID,
-  propertiesCollectionId:
-    process.env.EXPO_PUBLIC_APPWRITE_PROPERTIES_COLLECTION_ID,
-  bucketId: process.env.EXPO_PUBLIC_APPWRITE_BUCKET_ID,
 };
 
 export const client = new Client();
@@ -40,7 +33,7 @@ export async function login() {
   try {
     const redirectUri = Linking.createURL("/");
 
-    const response = await account.createOAuth2Token(
+    const response = account.createOAuth2Token(
       OAuthProvider.Google,
       redirectUri
     );
@@ -97,71 +90,98 @@ export async function getCurrentUser() {
   }
 }
 
-export async function getLatestProperties() {
-  try {
-    const result = await databases.listDocuments(
-      config.databaseId!,
-      config.propertiesCollectionId!,
-      [Query.orderAsc("$createdAt"), Query.limit(5)]
-    );
 
-    return result.documents;
+
+
+export async function loginWithEmail(email: string, password: string) {
+  try {
+    const session = await account.createEmailPasswordSession(email, password);
+
+    if (session) {
+      const user = await getCurrentUser();
+
+      if (user && !user.emailVerification) {
+        await logout();  // Log out if email is not verified
+        Alert.alert("Error", "Please verify your email before logging in.");
+        return false; // Prevent further login flow
+      }
+
+      return true; // Successful login if email is verified
+    }
+
+    return false;
+  } catch (error: any) {
+    if (error.message.includes("Rate limit")) {
+      throw new Error("Too many attempts. Please try again in a few minutes.");
+    }
+    console.error("Login error:", error);
+    throw error;
+  }
+}
+export async function sendVerificationCode(email: string, password: string, name: string) {
+  try {
+    const userId = ID.unique();
+    const user = await account.create(userId, email, password, name);
+
+    const redirectUri = Linking.createURL('/verify-screen');
+    await account.createVerification(redirectUri);
+
+    console.log("Registration successful. Verification email sent.");
+    return user;
   } catch (error) {
-    console.error(error);
-    return [];
+    console.error("Registration error:", error);
+    throw error;
   }
 }
 
-export async function getProperties({
-  filter,
-  query,
-  limit,
-}: {
-  filter: string;
-  query: string;
-  limit?: number;
-}) {
+export async function verifyCode(userId: string, secret: string) {
   try {
-    const buildQuery = [Query.orderDesc("$createdAt")];
-
-    if (filter && filter !== "All")
-      buildQuery.push(Query.equal("type", filter));
-
-    if (query)
-      buildQuery.push(
-        Query.or([
-          Query.search("name", query),
-          Query.search("address", query),
-          Query.search("type", query),
-        ])
-      );
-
-    if (limit) buildQuery.push(Query.limit(limit));
-
-    const result = await databases.listDocuments(
-      config.databaseId!,
-      config.propertiesCollectionId!,
-      buildQuery
-    );
-
-    return result.documents;
+    await account.updateVerification(userId, secret);
+    return true;
   } catch (error) {
-    console.error(error);
-    return [];
+    console.error('Verify code error:', error);
+    throw error;
   }
 }
 
-// write function to get property by id
-export async function getPropertyById({ id }: { id: string }) {
+export async function registerWithEmail(email: string, password: string, name: string) {
   try {
-    const result = await databases.getDocument(
-      config.databaseId!,
-      config.propertiesCollectionId!,
-      id
-    );
-    return result;
+    const userId = ID.unique();
+    const user = await account.create(userId, email, password, name);
+
+    if (user) {
+      console.log("User created:", user);
+
+      // Wait before calling getCurrentUser()
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      const currentUser = await getCurrentUser();
+      console.log("Current user after registration:", currentUser);
+
+      if (!currentUser) {
+        throw new Error("User session not established. Please log in manually.");
+      }
+
+      // Send email verification
+      const redirectUri = Linking.createURL("/verify-screen");
+      await account.createVerification(redirectUri);
+      console.log("Verification email sent.");
+      
+      return user;
+    }
   } catch (error) {
-    console.error(error);
-    return null;
+    console.error("Registration error:", error);
+    throw error;
+  }
+}
+
+export async function verifyEmail(userId: string, secret: string) {
+  try {
+    await account.updateVerification(userId, secret);
+    console.log("Email verified successfully.");
+    return true;
+  } catch (error) {
+    console.error("Verify email error:", error);
+    throw error;
   }
 }

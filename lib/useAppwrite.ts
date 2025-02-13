@@ -11,7 +11,7 @@ interface UseAppwriteReturn<T, P> {
   data: T | null;
   loading: boolean;
   error: string | null;
-  refetch: (newParams: P) => Promise<void>;
+  refetch: (newParams?: P) => Promise<void>;
 }
 
 export const useAppwrite = <T, P extends Record<string, string | number>>({
@@ -31,11 +31,15 @@ export const useAppwrite = <T, P extends Record<string, string | number>>({
       try {
         const result = await fn(fetchParams);
         setData(result);
-      } catch (err: unknown) {
-        const errorMessage =
-          err instanceof Error ? err.message : "An unknown error occurred";
-        setError(errorMessage);
-        Alert.alert("Error", errorMessage);
+      } catch (err: any) {
+        if (err.message.includes('Rate limit')) {
+          setError('Too many attempts. Please try again in a few minutes.');
+          Alert.alert('Error', 'Too many attempts. Please try again in a few minutes.');
+        } else {
+          const errorMessage = err instanceof Error ? err.message : "An unknown error occurred";
+          setError(errorMessage);
+          Alert.alert("Error", errorMessage);
+        }
       } finally {
         setLoading(false);
       }
@@ -49,7 +53,11 @@ export const useAppwrite = <T, P extends Record<string, string | number>>({
     }
   }, []);
 
-  const refetch = async (newParams: P) => await fetchData(newParams);
+  const refetch = async (newParams?: P) => {
+    // Add delay between requests
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    await fetchData(newParams || params);
+  };
 
   return { data, loading, error, refetch };
 };

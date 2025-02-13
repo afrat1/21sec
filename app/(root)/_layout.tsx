@@ -20,11 +20,14 @@ export default function AppLayout() {
   if (loading) {
     return (
       <SafeAreaView className="bg-white h-full flex justify-center items-center">
-        <ActivityIndicator className="text-primary-300" size="large" />
+        <ActivityIndicator size="large" color="#0000ff" />
+        <Text className="mt-4 text-lg font-rubik text-center text-gray-600">
+          Loading...
+        </Text>
       </SafeAreaView>
     );
   }
-  console.log("logged ", isLogged);
+
   if (!isLogged) {
     return <Redirect href="/sign-in" />;
   }
