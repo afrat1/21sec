@@ -92,10 +92,10 @@ export const settings = [
     title: "Language",
     icon: icons.language,
   },
-  {
-    title: "Help Center",
-    icon: icons.info,
-  },
+  //{
+    //title: "Help Center",
+    //icon: icons.info,
+  //},
   {
     title: "Invite Friends",
     icon: icons.people,
