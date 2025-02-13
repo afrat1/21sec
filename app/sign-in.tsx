@@ -108,7 +108,7 @@ const Auth = () => {
 
           <Text className="text-3xl font-rubik-bold text-black-300 text-center mt-2">
             Let's Get You Closer To {"\n"}
-            <Text className="text-primary-300">Your Ideal Home</Text>
+            <Text className="text-primary-300">Your Best Potentional</Text>
           </Text>
 
           <View className="mt-8">

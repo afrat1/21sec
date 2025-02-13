@@ -99,12 +99,33 @@ export async function loginWithEmail(email: string, password: string) {
       const user = await getCurrentUser();
 
       if (user && !user.emailVerification) {
-        await logout();  // Log out if email is not verified
-        Alert.alert("Error", "Please verify your email before logging in.");
-        return false; // Prevent further login flow
+        Alert.alert(
+          "Email Verification Required",
+          "Your email is not verified. Would you like to resend the verification email?",
+          [
+            {
+              text: "Cancel",
+              style: "cancel",
+            },
+            {
+              text: "Resend Email",
+              onPress: async () => {
+                try {
+                  await account.createVerification("http://localhost:8081/verify-screen");
+                  Alert.alert("Success", "Verification email has been resent. Please check your inbox.");
+                } catch (error) {
+                  console.error("Error resending verification email:", error);
+                  Alert.alert("Error", "Failed to send verification email. Try again later.");
+                }
+              },
+            },
+          ]
+        );
+
+        return true;
       }
 
-      return true; // Successful login if email is verified
+      return true; // Email doğrulandıysa giriş başarılı.
     }
 
     return false;
