@@ -176,3 +176,34 @@ export async function verifyEmail(userId: string, secret: string) {
     throw error;
   }
 }
+
+export const updateUser = async ({ name, password, avatar }) => {
+  try {
+      if (name) {
+          await account.updateName(name);
+      }
+
+      if (password) {
+          await account.updatePassword(password.newPassword, password.currentPassword); 
+          
+        ;
+      }
+
+      if (avatar) {
+          // Handle avatar upload to Appwrite Storage
+          console.log("Avatar update functionality not implemented yet.");
+      }
+  } catch (error) {
+      console.error("Failed to update user:", error);
+      throw error;
+  }
+};
+
+
+export const updateUserPassword = async (currentPassword: string, newPassword: string) => {
+  try {
+    return account.updatePassword(newPassword, currentPassword); 
+  } catch (error) {
+      throw new Error("Incorrect current password or password update failed.");
+  }
+};
